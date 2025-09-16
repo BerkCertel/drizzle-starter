@@ -13,18 +13,24 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { createUser } from "@/server/users";
+import { createUser, updateUser } from "@/server/users";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { User } from "@/db/schema";
+import { DialogClose } from "../ui/dialog";
+
+interface UserFormProps {
+  user: User;
+}
 
 const formSchema = z.object({
   username: z.string().min(2).max(50),
   email: z.email(),
 });
 
-export default function UserForm() {
+export default function UserForm({ user }: UserFormProps) {
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -32,8 +38,8 @@ export default function UserForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
-      email: "",
+      username: user?.username || "",
+      email: user?.email || "",
     },
   });
 
@@ -42,12 +48,20 @@ export default function UserForm() {
     try {
       setIsLoading(true);
       const userData = { ...values, password: "123456" };
-      await createUser(userData);
+
+      if (user) {
+        await updateUser({ ...userData, id: user.id });
+      } else {
+        await createUser(userData);
+      }
+
       form.reset();
-      toast.success("User created successfully");
+      toast.success(`User ${user ? "updated" : "created"} successfully.`);
       router.refresh();
     } catch (error) {
-      toast.error("Error creating user");
+      toast.error(
+        `User ${user ? "updated" : "create"} failed. Please try again.`
+      );
       console.log(error);
     } finally {
       setIsLoading(false);
@@ -85,16 +99,21 @@ export default function UserForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? (
-            <div className="flex items-center space-x-2">
-              <Loader2 className="animate-spin" />
-              <span>Creating...</span>
-            </div>
-          ) : (
-            "Submit"
-          )}
-        </Button>
+        <div className="flex justify-end space-x-2">
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <Loader2 className="animate-spin" />
+                <span>{user ? "Updating..." : "Creating..."}</span>
+              </div>
+            ) : (
+              <span>{user ? "Update User" : "Create User"}</span>
+            )}
+          </Button>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+        </div>
       </form>
     </Form>
   );

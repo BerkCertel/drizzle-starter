@@ -22,13 +22,10 @@ export async function createUser(
   );
 }
 
-export async function updateUser(
-  id: string,
-  user: Omit<User, "id" | "createdAt" | "updatedAt">
-) {
+export async function updateUser(user: Omit<User, "createdAt" | "updatedAt">) {
   return withErrorHandler(
     async () => (
-      await db.update(users).set(user).where(eq(users.id, id)),
+      await db.update(users).set(user).where(eq(users.id, user.id)),
       { success: true }
     ),
     "Error updating user"

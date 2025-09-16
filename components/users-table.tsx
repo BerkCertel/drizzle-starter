@@ -7,7 +7,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { getUsers } from "@/server/users";
+import { Button } from "./ui/button";
+import { Pencil } from "lucide-react";
+import DeleteUserButton from "./delete-user-button";
+import UserForm from "./forms/user-create-form";
 
 export default async function UsersTable() {
   const users = await getUsers();
@@ -21,6 +33,7 @@ export default async function UsersTable() {
           <TableHead>Username</TableHead>
           <TableHead>Created At</TableHead>
           <TableHead className="text-right">Updated At</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -31,6 +44,26 @@ export default async function UsersTable() {
             <TableCell>{user.createdAt?.toLocaleString()}</TableCell>
             <TableCell className="text-right">
               {user.updatedAt?.toLocaleString()}
+            </TableCell>
+            <TableCell className="text-right">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="ml-2">
+                    <Pencil className="size-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Are you absolutely sure?</DialogTitle>
+                    <DialogDescription>
+                      This action cannot be undone. This will permanently delete
+                      the user.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <UserForm user={user} />
+                </DialogContent>
+              </Dialog>
+              <DeleteUserButton userId={user.id} />
             </TableCell>
           </TableRow>
         ))}
