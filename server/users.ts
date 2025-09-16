@@ -16,7 +16,8 @@ export async function createUser(
   user: Omit<User, "id" | "createdAt" | "updatedAt">
 ) {
   return withErrorHandler(
-    async () => await db.insert(users).values(user),
+    async () => (await db.insert(users).values(user), { success: true }),
+
     "Error creating user"
   );
 }
@@ -26,14 +27,19 @@ export async function updateUser(
   user: Omit<User, "id" | "createdAt" | "updatedAt">
 ) {
   return withErrorHandler(
-    async () => await db.update(users).set(user).where(eq(users.id, id)),
+    async () => (
+      await db.update(users).set(user).where(eq(users.id, id)),
+      { success: true }
+    ),
     "Error updating user"
   );
 }
 
 export async function deleteUser(id: string) {
   return withErrorHandler(
-    async () => await db.delete(users).where(eq(users.id, id)),
+    async () => (
+      await db.delete(users).where(eq(users.id, id)), { success: true }
+    ),
     "Error deleting user"
   );
 }
